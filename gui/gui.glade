@@ -13,13 +13,14 @@
           <object class="GtkToolbar" id="toolbar1">
             <property name="visible">True</property>
             <child>
-              <object class="GtkToggleToolButton" id="toolbutton1">
+              <object class="GtkToggleToolButton" id="tbconnect">
                 <property name="visible">True</property>
                 <property name="tooltip_text" translatable="yes">Remote Access</property>
                 <property name="is_important">True</property>
                 <property name="label" translatable="yes">Connect</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-connect</property>
+                <signal name="clicked" handler="on_tbconnect_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -116,7 +117,50 @@
                     <property name="visible">True</property>
                     <property name="left_padding">12</property>
                     <child>
-                      <placeholder/>
+                      <object class="GtkTable" id="table1">
+                        <property name="visible">True</property>
+                        <property name="n_rows">3</property>
+                        <property name="n_columns">3</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="button1">
+                            <property name="label" translatable="yes">send</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <signal name="clicked" handler="on_btsend_clicked"/>
+                          </object>
+                          <packing>
+                            <property name="top_attach">1</property>
+                            <property name="bottom_attach">2</property>
+                            <property name="x_options">GTK_FILL</property>
+                            <property name="y_options">GTK_FILL</property>
+                          </packing>
+                        </child>
+                      </object>
                     </child>
                   </object>
                 </child>
