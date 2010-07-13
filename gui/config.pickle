@@ -1,0 +1,14 @@
+(dp0
+S'debug_file'
+p1
+S'debug.log'
+p2
+sS'glade_file'
+p3
+S'gui.glade'
+p4
+sS'mod'
+p5
+S'debug'
+p6
+s.

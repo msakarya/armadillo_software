@@ -1,2 +1,4 @@
 #compiled python
 *.pyc
+#log file
+debug.log
