@@ -320,55 +320,61 @@
     </child>
   </object>
   <object class="GtkDialog" id="preferences_dialog">
+    <property name="width_request">320</property>
+    <property name="height_request">240</property>
     <property name="border_width">5</property>
     <property name="type_hint">normal</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
-      <object class="GtkVBox" id="dialog-vbox2">
+      <object class="GtkVBox" id="preferences_dialog_vbox">
         <property name="visible">True</property>
         <property name="spacing">2</property>
         <child>
-          <object class="GtkVBox" id="vbox2">
+          <object class="GtkComboBoxEntry" id="pd_cb">
             <property name="visible">True</property>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
+            <property name="model">pd_cb_liststore</property>
+            <signal name="changed" handler="on_pd_cb_changed"/>
           </object>
           <packing>
+            <property name="fill">False</property>
             <property name="position">1</property>
           </packing>
         </child>
+        <child>
+          <object class="GtkHSeparator" id="preferences_dialog_hseparator">
+            <property name="height_request">60</property>
+            <property name="visible">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="pd_entry">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="invisible_char">&#x25CF;</property>
+          </object>
+          <packing>
+            <property name="fill">False</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
         <child internal-child="action_area">
-          <object class="GtkHButtonBox" id="dialog-action_area2">
+          <object class="GtkHButtonBox" id="preferences_dialog_action_area">
             <property name="visible">True</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="bt_preferences_dialog_new">
-                <property name="label" translatable="yes">New</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <signal name="clicked" handler="on_bt_preferences_dialog_new_clicked"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">0</property>
-              </packing>
+              <placeholder/>
             </child>
             <child>
-              <object class="GtkButton" id="bt_preferences_dialog_cancel">
-                <property name="label" translatable="yes">Cancel</property>
+              <object class="GtkButton" id="pd_set_bt">
+                <property name="label" translatable="yes">Set</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="on_bt_preferences_dialog_cancel_clicked"/>
+                <signal name="clicked" handler="on_pd_set_bt_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -377,12 +383,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="bt_preferences_dialog_save">
-                <property name="label" translatable="yes">Save</property>
+              <object class="GtkButton" id="pd_close_bt">
+                <property name="label" translatable="yes">Close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="on_bt_preferences_dialog_save_clicked"/>
+                <signal name="clicked" handler="on_pd_close_bt_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -400,9 +406,14 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget response="0">bt_preferences_dialog_new</action-widget>
-      <action-widget response="0">bt_preferences_dialog_cancel</action-widget>
-      <action-widget response="0">bt_preferences_dialog_save</action-widget>
+      <action-widget response="0">pd_set_bt</action-widget>
+      <action-widget response="0">pd_close_bt</action-widget>
     </action-widgets>
+  </object>
+  <object class="GtkListStore" id="pd_cb_liststore">
+    <columns>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray"/>
+    </columns>
   </object>
 </interface>
