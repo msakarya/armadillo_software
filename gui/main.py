@@ -4,6 +4,7 @@ pygtk.require("2.0")
 import sys
 import gtk
 from com import COM
+import re
 
 class Main:
     def __init__(self):        
@@ -17,14 +18,29 @@ class Main:
         self.pd_entry=builder.get_object("pd_entry")
         self.pd_cb=builder.get_object("pd_cb")
         self.pd_cb_liststore=builder.get_object("pd_cb_liststore")
-        
+        self.l_message=builder.get_object("l_message")
+        self.statusbar=builder.get_object("statusbar1")
+        self.console_view=builder.get_object("console_view")
+        self.console_text=builder.get_object("console_text")
         builder.connect_signals(self)
 
-        self.com=COM()
+        self.com=COM(read_cbf=self.read_cbf)
         self.tbconnect.set_active(True)
         self.pd_init()
-    def on_btsend_clicked(self, widget, data=None):
-        self.com.write([1,2,3])
+    def read_cbf(self,data):
+        if(data[0]=='s'):
+            if(len(data)>12):
+                #self.l_message.set_text(''.join(data))
+                str=''.join(data)
+                str=re.split('[^0-9]', str)                
+                self.statusbar.push(0,''.join(str)+' seconds')
+        if(data[0]=='$'):
+            str=''.join(data)            
+            ct=self.console_text
+            enditer = ct.get_end_iter()
+            ct.insert(enditer, str)
+    def on_btsend_clicked(self, widget, data=None):        
+        self.com.write("id?\r")
     def on_tbconnect_clicked(self, widget, data=None):
         if widget.get_active():            
             self.com.connect()
@@ -56,6 +72,10 @@ class Main:
     def on_pd_close_bt_clicked(self, widget, data=None):
         self.preferences_dialog.hide()
     def on_window1_destroy(self, widget, data=None):
+        try:
+            self.com.close()
+        except:
+            a=0
         gtk.main_quit()
     def on_aboutdialog1_show(self, widget, data=None):
         self.about.show()
@@ -94,6 +114,11 @@ class Configure:
 conf=Configure()
 
 if __name__=="__main__":
+    gtk.gdk.threads_init()
     app=Main()   
     app.window.show()
+    gtk.gdk.threads_enter()
     gtk.main()
+    gtk.gdk.threads_leave()
+    #gtk.threads_enter()
+    #gtk.threads_leave()
