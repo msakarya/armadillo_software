@@ -137,12 +137,13 @@ class COM:
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~            
 class TClient:
-    def __init__(self,prc='sub',ip="localhost"):        
+    def __init__(self,prc='sub',ip="localhost",port=None):        
         host = ip
-        if prc=='sub':
-            port=21568
-        else: #'main'
-            port=21567
+        if not port:            
+            if prc=='sub':
+                port=21568
+            else: #'main'
+                port=21567
         port = port
         buf = 1024
         self.addr = (host,port)
@@ -151,29 +152,25 @@ class TClient:
         msg=cPickle.dumps(data)
         self.UDPSock.sendto(msg,self.addr)        
 class TServer(threading.Thread):
-    def __init__(self,prc='main',rcbf=None,ip="localhost",port=None):
+    def __init__(self,prc='main',rcbf=None,ip="localhost"):
         threading.Thread.__init__(self)  
         self.rcbf=rcbf        
         host = ip
-        if not port:            
-            if prc=='sub':
-                port=21567
-            else: #'main'
-                port=21568
+        if prc=='sub':
+            port=21567
+        else: #'main'
+            port=21568
         port = port
         self.buf = 1024
-        #addr = ("192.168.1.43",43180)#("85.101.34.130",43180)
-        addr = ("localhost",43180)#(host,port)
+        addr = (host,port)
         self.UDPSock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self.UDPSock.bind(addr)
-    def receive(self): 
-        print "receive"   
+    def receive(self):    
         data,addr = self.UDPSock.recvfrom(self.buf)            
         try:
             msg= cPickle.loads(data)
         except:
             msg=data
-        
         return msg
     
     def run(self):
@@ -188,13 +185,15 @@ class TServer(threading.Thread):
 def srcbf(data):
     print data,'from call back'
 if __name__=="__main__":
-    c=TClient("sub")
-    #s=TServer("main",rcbf=srcbf)
+    c=TClient("sub",ip="85.101.34.130",port=43180)
+    #s=TServer("sub",rcbf=srcbf,"85.101.34.130")
     #s.start()
-    l=[1,2,3]
-    c.send(l)
-    c.send("print 'selam'")
-    time.sleep(0.1)
+    #l=[1,2,3]
+    c.send("selamlar3")
+    #c.send("print kit.e")
+    #time.sleep(0.1)
+    #c.send("print kit.d")
+    #time.sleep(0.1)
     #s.kill()    
-    print("main")
+    #print("main")
     #com=COM()

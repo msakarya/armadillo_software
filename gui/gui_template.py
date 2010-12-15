@@ -1,15 +1,19 @@
 #!/usr/bin/env python
+__copyright__ = 'Copyright (C) 2010 Mustafa Sakarya'
+__author__    = 'Mustafa Sakarya mustafasakarya1986@gmail.com'
+__license__   = 'GNU GPLv3 http://www.gnu.org/licenses/'
 import pygtk
 pygtk.require("2.0")
 import sys
+import os
 import gtk
-from com import COM
-import re
 
-class Main:
+class MainWindow:
     def __init__(self):        
-        builder = gtk.Builder()                 
-        builder.add_from_file(conf.d['glade_file'])
+        builder = gtk.Builder()
+        self.builder=builder
+        f='glade'+os.sep+conf.d['glade_file']
+        builder.add_from_file(f)
         self.window = builder.get_object("window1")
         self.about = builder.get_object("aboutdialog1")
         self.tbconnect=builder.get_object("tbconnect")
@@ -17,36 +21,14 @@ class Main:
         self.preferences_dialog_align= builder.get_object("preferences_dialog_vbox")
         self.pd_entry=builder.get_object("pd_entry")
         self.pd_cb=builder.get_object("pd_cb")
-        self.pd_cb_liststore=builder.get_object("pd_cb_liststore")
-        self.l_message=builder.get_object("l_message")
-        self.statusbar=builder.get_object("statusbar1")
-        self.console_view=builder.get_object("console_view")
-        self.console_text=builder.get_object("console_text")
-        builder.connect_signals(self)
-
-        self.com=COM(read_cbf=self.read_cbf)
-        self.tbconnect.set_active(True)
-        self.pd_init()
-    def read_cbf(self,data):
-        if(data[0]=='s'):
-            if(len(data)>12):
-                #self.l_message.set_text(''.join(data))
-                str=''.join(data)
-                str=re.split('[^0-9]', str)                
-                self.statusbar.push(0,''.join(str)+' seconds')
-        if(data[0]=='$'):
-            str=''.join(data)            
-            ct=self.console_text
-            enditer = ct.get_end_iter()
-            ct.insert(enditer, str)
-    def on_btsend_clicked(self, widget, data=None):        
-        self.com.write("id?\r")
+        self.pd_cb_liststore=builder.get_object("pd_cb_liststore")        
+        self.statusbar=builder.get_object("statusbar1")          
+        builder.connect_signals(self)            
+        self.pd_init()          
     def on_tbconnect_clicked(self, widget, data=None):
-        if widget.get_active():            
-            self.com.connect()
+        if widget.get_active():          
             widget.set_label("Connected")
-        else:                  
-            self.com.disconnect()
+        else:                              
             widget.set_label("      Closed")
     def on_pd_cb_changed(self, widget, data=None):
         entry=self.pd_entry #Preferences dialog combobox
@@ -71,11 +53,7 @@ class Main:
         conf.save()
     def on_pd_close_bt_clicked(self, widget, data=None):
         self.preferences_dialog.hide()
-    def on_window1_destroy(self, widget, data=None):
-        try:
-            self.com.close()
-        except:
-            a=0
+    def on_window1_destroy(self, widget, data=None):                  
         gtk.main_quit()
     def on_aboutdialog1_show(self, widget, data=None):
         self.about.show()
@@ -113,12 +91,8 @@ class Configure:
 
 conf=Configure()
 
-if __name__=="__main__":
-    gtk.gdk.threads_init()
-    app=Main()   
-    app.window.show()
-    gtk.gdk.threads_enter()
-    gtk.main()
-    gtk.gdk.threads_leave()
-    #gtk.threads_enter()
-    #gtk.threads_leave()
+if __name__=="__main__":    
+    app=MainWindow()
+    app.window.show()       
+    gtk.main()    
+    

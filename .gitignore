@@ -2,3 +2,5 @@
 *.pyc
 #log file
 debug.log
+#edited text file
+*.py~
