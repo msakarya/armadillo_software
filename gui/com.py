@@ -108,8 +108,13 @@ class COM:
                     nsum=0
                     cnt=0                    
                 else:
-                    nsum = (nsum+ord(rxbuff[-cnt-1]))%256
-                    cnt=cnt+1        
+                    try:
+                        nsum = (nsum+ord(rxbuff[-cnt-1]))%256
+                        cnt=cnt+1       
+                    except:
+                        step=0
+                        nsum=0
+                        cnt=0
     def write(self,data):
         if(isinstance(data,str)):
             l=[]                

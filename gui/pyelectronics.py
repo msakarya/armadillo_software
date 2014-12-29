@@ -3,13 +3,9 @@ __copyright__ = 'Copyright (C) 2010 Mustafa Sakarya'
 __author__    = 'Mustafa Sakarya mustafasakarya1986@gmail.com'
 __license__   = 'GNU GPLv3 http://www.gnu.org/licenses/'
 
-from com import COM,TClient,TServer
-import re,sys
-import urllib
-import json
-import time
-from SocketServer import BaseRequestHandler, TCPServer
-import socket
+from com import COM
+import re
+from http import Network
 class ADC:
     def __init__(self):
         self.adc=range(32)
@@ -46,138 +42,49 @@ class SERVO:
         l=self.pack_servo(w)
         self.com.write(l)        
         return l
-global nparent
-nparent=None
-class ServerHandler(BaseRequestHandler):
-    
-    def handle(self):
-        global nparent
-        
-        #print "Client connected:" , self.client_address
-        data=self.request.recv(2**16)
-        
-        l= data.split("\n")
-        #print l
-        for s in l:
-            if s.find("tag")>=0:
-                nparent.sh_cbf(s)
-        
-        self.request.sendall(data)
-        self.request.close()
-class Network:   
-    def __init__(self,parent=None):  
-        self.parent=parent  
-        self.client=TClient(prc='main')
-        self.server=TServer(prc='main',rcbf=self.network_rcbf,ip="85.101.34.130",port=80)
-        self.server.start()  
-        """ 
-        self.webid="armadilloKit1235"
-        self.dburl="http://electronnics-tinywebdb.appspot.com/"
-        self.dbgeturl=self.dburl+"getvalue"
-        self.dbstoreurl=self.dburl+"storeavalue" 
-        self.port = "43180"   
-        global nparent
-        nparent=self
-        self.sh=TCPServer(("192.168.1.43",43180),ServerHandler)
-        """
-    def sh_cbf(self,data):
-        data=data.split("=")[2]
-        conversion={"%5B":"[","%22":"\"","%5D":"]","%2C":","}
-        for key in conversion.keys():
-            data=data.replace(key,conversion[key])
-            
-        tag,value=eval(data)
-        print tag,value
-        #l=data.split("storeavalue")
-        #if len(l)>1:
-            #l=l[1].split(",")
-        #    print l
-            #tag=eval(l[0].split("=")[1])
-            #value=eval(l[1].split(" ")[0].split("=")[1])
-            #print "tag = ",tag," value = ",value
-    def network_rcbf(self,data):        
-        self.parse(data)
-    def getgip(self):
-        fip = urllib.urlopen("http://www.whatismyip.org/")
-        sip = fip.read()       
-        fip.close()
-        return sip
-    def webdbget(self,tag):
-        data = urllib.urlencode({"tag" : tag})
-        fwebdb=urllib.urlopen(self.dbgeturl,data)
-        swebdb=fwebdb.read()
-        fwebdb.close()
-        return swebdb
-    def webdbstore(self,tag,value):
-        data = urllib.urlencode({"tag" : tag,"value":value})
-        fwebdb=urllib.urlopen(self.dbstoreurl,data)
-        swebdb=fwebdb.read()
-        fwebdb.close()
-        return swebdb
-    def register(self):
-        self.sip=self.getgip()
-        webidlist = self.webdbget("webid")
-        webidlist = json.loads(webidlist)[2]
-        if len(webidlist) > 0:
-            webidlist = eval(webidlist)
 
-        if not isinstance(webidlist,list):
-            webidlist=[]
-            print "webidlist cleared"
-        if not self.webid in webidlist:
-            webidlist.append(self.webid)
-            self.webdbstore("webid",webidlist)
-            print "webid is stored"
-        else:
-            print "webid already available"
-        data=[time.ctime(),self.sip,self.port]
-        self.webdbstore("webidip_"+self.webid,data)
-        print 'registered'
-    def parse(self,data): 
-        kit=self.parent  
-        print data
-        """     
-        if isinstance(data,str):
-            try:
-                exec(data)
-            except:
-                print "exception"           
-        """    
-    def write(self,arg):
-        self.client.send(arg)
-    def kill(self):
-        self.server.kill()  
-class STD:
-    def __init__(self): 
-        sys.stdout=self 
-        sys.stderr=sys.stdout       
-        self.f=[]    
-    def write(self,arg=None):
-        sys.__stdout__.write(arg)
-        for f in self.f:
-            f.write(arg)        
+
+      
         
 class Armadillo(ADC,SERVO):
     def __init__(self):
-        self.std=STD()        
+               
         ADC.__init__(self)
         SERVO.__init__(self)
         self.com=COM(read_cbf=self.parse)
-        
-        self.network=Network(parent=self)
-        self.std.f.append(self.network)       
+        self.nlast=None
+        n=self.network=Network(self.ncbf,self)
+              
         
         self.d={}
         self.f={}
         f=self.f
         d=self.d
         d['request_id']="id?\r"
+        d['ledset']="$t=l,a=" #task = ledset, args = ...
         f['message']=None
         f['seconds']=None
         f['adc']=None
         f['osf']=[] #one shot functions to be called
                     #at sync with com checkout
-        
+    def ncbf(self,data):
+        t=data[0]
+        n=self.network
+        d=self.d
+        if n.timer.cnt>20:            
+            n.timer.interval=3
+        elif n.timer.cnt>200:
+            n.timer.cnt=201
+            n.timer.interval=10
+        if self.nlast!=data[0]:
+            self.nlast=data[0]
+            n.timer.cnt=0
+            n.timer.interval=1
+            task=data[1]
+            if task=="ledset":
+                print "ledset",data[2]
+                if self.com.serial.isOpen():
+                    self.com.write(d['ledset']+data[2])
     def parse(self,data):
         d=self.d
         f=self.f
@@ -195,7 +102,7 @@ class Armadillo(ADC,SERVO):
             self.parse_adc(data)            
             if(f['adc']):
                 f['adc'](self.adc)
-            for f in f['osf']:
+            for f in f['osf']:               
                 f()
             self.f['osf']=[]
     def connect(self):
@@ -204,15 +111,16 @@ class Armadillo(ADC,SERVO):
         self.com.disconnect()
     def destroy(self):
         try:
-            self.network.kill()
+            #self.network.kill()
             self.com.disconnect()
         except:
             pass
+    
     def request_id(self):
         d=self.d
         #print self.com.is_open()
-        #if self.com.is_open():
-        self.com.write(d['request_id'])
+        if self.com.serial.isOpen():
+            self.com.write(d['request_id'])
 class Kit:  #Name wrapper class
     def __init__(self):
         self.__kit__=Armadillo()
@@ -225,8 +133,8 @@ class Kit:  #Name wrapper class
         self.register=k.network.register
         self.network=k.network
 if __name__=="__main__":
-    kit=Kit()    
+    kit=Armadillo()
     kit.connect()
-    kit.register()
-    kit.network.sh.serve_forever() 
+    n=kit.network
+    n.connect()
     #kit.network.write("text")
